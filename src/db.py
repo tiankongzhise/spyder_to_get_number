@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, Date,DateTime,UniqueConstraint
+from sqlalchemy import create_engine, Column, String, Integer, Date,DateTime,UniqueConstraint,Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os 
@@ -63,6 +63,70 @@ class AdmissionRecordTable(Base):
         ),
         {'comment': '唯一索引'}
     )
+
+
+class MajorTable(Base):
+    __tablename__ = 'majors'  # 表名根据实际需求修改
+    table_key = Column(Integer, primary_key=True, autoincrement=True)
+    zyzdm = Column(String(20))                   # 专业组代码
+    zydm = Column(String(20))                    # 专业代码
+    zymc = Column(String(50))                    # 专业名称
+    yxdh = Column(String(10))                    # 院系代号
+    zydh = Column(String(10))                    # 专业代号
+    jhrs = Column(Integer)                       # 计划人数
+    xzdm = Column(String(10))                    # 学制代码
+    skkmyq = Column(String(50))                  # 省控科目要求
+    wyyzdm = Column(String(50))                  # 外语语种代码
+    sfbz = Column(String(10))                    # 省份标准
+    kskmyq = Column(String(50))                  # 考生科目要求
+    sfks = Column(Boolean)                       # 是否考试
+    bxddbb = Column(Boolean)                     # 是否需要报备
+    bz = Column(String(500))                     # 备注
+    record_date = Column(Date, default=beijing_time,nullable=False,comment='记录时间')
+    # 唯一索引配置
+    __table_args__ = (
+        UniqueConstraint(
+            'record_date', 
+            'yxdh',
+            'zyzdm',
+            'zydm',
+            'zydh',
+            name='uq_record_date_yxdh_zyzdm_zydm'
+        ),
+        {'comment': '唯一索引'}
+    )
+
+class MajorPlanTable(Base):
+    __tablename__ = 'majors_plan'  # 表名根据实际需求修改
+    table_key = Column(Integer, primary_key=True, autoincrement=True)
+    zyzdm = Column(String(20))                   # 专业组代码
+    zydm = Column(String(20))                    # 专业代码
+    zymc = Column(String(50))                    # 专业名称
+    yxdh = Column(String(10))                    # 院系代号
+    zydh = Column(String(10))                    # 专业代号
+    jhrs = Column(Integer)                       # 计划人数
+    xzdm = Column(String(10))                    # 学制代码
+    skkmyq = Column(String(50))                  # 省控科目要求
+    wyyzdm = Column(String(50))                  # 外语语种代码
+    sfbz = Column(String(10))                    # 省份标准
+    kskmyq = Column(String(50))                  # 考生科目要求
+    sfks = Column(Boolean)                       # 是否考试
+    bxddbb = Column(Boolean)                     # 是否需要报备
+    bz = Column(String(500))                     # 备注
+    record_date = Column(Date, default=beijing_time,nullable=False,comment='记录时间')
+    # 唯一索引配置
+    __table_args__ = (
+        UniqueConstraint(
+            'record_date', 
+            'yxdh',
+            'zyzdm',
+            'zydm',
+            'zydh',
+            name='uq_record_date_yxdh_zyzdm_zydm'
+        ),
+        {'comment': '唯一索引'}
+    )
+
 
 # 数据库配置（根据实际情况修改）
 DB_CONFIG = {

@@ -11,5 +11,6 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "requests>=2.32.3",
     "sqlalchemy>=2.0.38",
+    "tqdm>=4.67.1",
     "urllib3==1.26.5",
 ]

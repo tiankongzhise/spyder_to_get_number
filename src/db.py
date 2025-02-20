@@ -23,9 +23,6 @@ def beijing_time():
 class AdmissionRecordTable(Base):
     __tablename__ = 'admission_records'
 
-   
-
-    
     # 修改为自增主键（需注意数据库兼容性）
     logic_key = Column(
         Integer, 
@@ -127,6 +124,28 @@ class MajorPlanTable(Base):
         {'comment': '唯一索引'}
     )
 
+class MajorClubTable(Base):
+    __tablename__ = 'majors_club'  # 表名根据实际需求修改
+    table_key = Column(Integer, primary_key=True, autoincrement=True)
+    zyzdm = Column(String(20))                   # 专业组代码
+    zyzmc = Column(String(20))                   # 专业组名称
+    zyzbh = Column(String(20))                   # 专业组编号
+    zysl = Column(Integer)                       # 专业数量
+    yxdh = Column(String(10))                    # 院系代号
+    jhrs = Column(Integer)                       # 计划人数
+    kskmyq = Column(String(50))                  # 考生科目要求
+    record_date = Column(Date, default=beijing_time,nullable=False,comment='记录时间')
+    # 唯一索引配置
+    __table_args__ = (
+        UniqueConstraint(
+            'record_date', 
+            'yxdh',
+            'zyzdm',
+            'zyzbh',
+            name='uq_record_date_yxdh_zyzdm_zyzbh'
+        ),
+        {'comment': '唯一索引'}
+    )
 
 # 数据库配置（根据实际情况修改）
 DB_CONFIG = {

@@ -1,10 +1,12 @@
 import requests
+from urllib.parse import quote
 import time
+from requests.adapters import HTTPAdapter
+import urllib3
 from db import Session,MajorTable,AdmissionRecordTable,MajorClubTable
 import pandas as pd
 import copy
-import os
-import datetime
+
 
 
 class GetDanZhaoServer(object):
@@ -160,57 +162,37 @@ class GetDanZhaoServer(object):
 
 if __name__ == "__main__":
     danzhao_server = GetDanZhaoServer()
-    yxdh_list = danzhao_server.get_distinct_yxdh_raw()
+    # yxdh_list = danzhao_server.get_distinct_yxdh_raw()
     fail_list = []
     str_format = '计划类别:{0},院校代号:{1},专业组代码{2}'
-    fail_file_path = './fail'
-    
-    if not os.path.exists(fail_file_path):
-        os.makedirs(fail_file_path) 
+    yxdh_list = ['1199']
     for yxdh in yxdh_list:
-
         for jhlb in ['g1','g2','g3','g4','g5']:
-
             zyzdm_rsp = danzhao_server.get_zyzdm(yxdh,jhlb)
-
             if zyzdm_rsp is None or zyzdm_rsp['code']!=200:
                 fail_list.append({'yxdh':yxdh,'zyzdm':'全部','jhlb':jhlb,"失败原因":'获取失败'})
                 print(f'{str_format.format(jhlb,yxdh,'全部')}查询专业组失败')
                 continue
-
             zyzdm_list = zyzdm_rsp['result']['records']
-
-            if len(zyzdm_list)==0:
-                print(f'计划类别{jhlb},院校代号{yxdh}没有专业组')
-                continue
-
+            print(zyzdm_list)
             print(f'计划类别{jhlb},院校代号{yxdh}的专业组开始保存到数据库')
             club_insert_result = danzhao_server.save_majors_club(zyzdm_list)
             if not club_insert_result:
                 fail_list.append({'yxdh':yxdh,'zyzdm':'全部','jhlb':jhlb,"失败原因":'保存到数据库失败'})
                 print(f'{str_format.format(jhlb,yxdh,"全部")}保存到数据库失败')
-            
             for zyzdm_item in zyzdm_list:
-
                 zyzdm = zyzdm_item['zyzdm']
-
                 jhrs_rsp = danzhao_server.get_jhrs(zyzdm,yxdh,jhlb)
-
                 if jhrs_rsp is None or jhrs_rsp['code']!=200:
                     fail_list.append({'yxdh':yxdh,'zyzdm':zyzdm,'jhlb':jhlb,"失败原因":"获取失败"})
                     print(f'{str_format.format(jhlb,yxdh,zyzdm)}查询专业招生计划失败')
                     continue
-
                 jhrs_list = jhrs_rsp['result']['records']
-
                 print(f'{str_format.format(jhlb,yxdh,zyzdm)}招生计划开始保存到数据库')
                 insert_result = danzhao_server.save_majors(jhrs_list)
-
                 if not insert_result:
                     fail_list.append({'yxdh':yxdh,'zyzdm':zyzdm,'jhlb':jhlb,"失败原因":"保存到数据库失败"})
                     print(f'{str_format.format(jhlb,yxdh,zyzdm)}保存到数据库失败')
                 time.sleep(1)
-    df = pd.DataFrame(fail_list)
-    fail_file_name = os.path.join(fail_file_path,f'{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.xlsx')
-    df.to_excel(f'f',index=False)
+    print(fail_list)
     danzhao_server.close_session()

@@ -1,8 +1,35 @@
 from db import Session,MajorPlanTable
+import re
+from tqdm import tqdm  # 需要先安装：pip install tqdm
+
+def get_new_jhrs_from_bz(bz):
+    if '计划' in bz:
+        match = re.search(r'计划.*?(\d+)', bz)
+        if match:
+            print(f'bz找到计划并获取到招生人数')
+            return int(match.group(1))
+        else:
+            print(f'bz找到计划，但是未获取到招生人数')
+            return 0
+    if '共' in bz:
+        match = re.search(r'共.*?(\d+)', bz)
+        if match:
+            print(f'bz找到共并获取到招生人数')
+            return int(match.group(1))
+        else:
+            print(f'bz找到共，但是未获取到招生人数')
+            return 0
+    match = re.search(r'(\d+)', bz)
+    if match:
+        print(f'bz未匹配到关键字，但是获取到招生人数')
+        return int(match.group(1))
+    else:
+        print(f'bz未匹配到关键字，也未获取到招生人数')
+        return 0
+
 
 def update_jhrs_from_bz(skip_zero=True, show_progress=True):
-    import re
-    from tqdm import tqdm  # 需要先安装：pip install tqdm
+
     
     with Session() as session:
         try:
@@ -18,9 +45,7 @@ def update_jhrs_from_bz(skip_zero=True, show_progress=True):
             iterator = tqdm(records, total=total) if show_progress else records
             for record in iterator:
                 try:
-                    match = re.search(r'计划.*?(\d+)', record.bz)
-                    if match:
-                        new_jhrs = int(match.group(1))
+                        new_jhrs = get_new_jhrs_from_bz(record.bz)
                         
                         print(f'更新计划人数：{new_jhrs}')
                         

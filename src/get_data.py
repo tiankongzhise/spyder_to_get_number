@@ -5,6 +5,7 @@ from requests.adapters import HTTPAdapter
 import urllib3
 from db import Session,AdmissionRecordTable
 import pandas as pd
+import tqdm
 
 def get_data(school_name):
     # 目标URL
@@ -81,7 +82,8 @@ def get_school_names():
 def main():
     session = Session()
     school_list = get_school_names()
-    for school_name in school_list:
+    #加一个进度条
+    for school_name in tqdm.tqdm(school_list, desc="进度条"):
         rsp_json = get_data(school_name)
         result = rsp_json['result']
         try:

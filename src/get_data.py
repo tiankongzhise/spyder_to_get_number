@@ -2,7 +2,7 @@ import requests
 from urllib.parse import quote
 import time
 from requests.adapters import HTTPAdapter
-import urllib3
+import os
 from db import Session,AdmissionRecordTable
 import pandas as pd
 import tqdm
@@ -82,6 +82,8 @@ def get_school_names():
 def main():
     session = Session()
     school_list = get_school_names()
+    fail_list = []
+    err_log = './err'
     #加一个进度条
     for school_name in tqdm.tqdm(school_list, desc="进度条"):
         rsp_json = get_data(school_name)
@@ -95,10 +97,36 @@ def main():
             print(f"{school_name}数据已保存到数据库！")
         except Exception as e:
             print(f"保存数据到数据库时出错：{e}")
+            fail_list.append({'school':school_name,"error":str(e)})
+            session.rollback()
         # 限速1秒
         time.sleep(1)
+    
+    if fail_list:
+        if not os.path.exists(err_log):
+            os.makedirs(err_log)
+        err_log_file = os.path.join(err_log, 'err_log.txt')
 
 
+        with open(err_log_file, 'w', encoding='utf-8') as file:
+            for item in fail_list:
+                file.write(f"学校名称: {item['school']}\n错误信息: {item['error']}\n\n")
+        print(f"保存错误日志到 {err_log}")
+    
+def debug(school_name):
+    session = Session()
+    rsp_json = get_data(school_name)
+    result = rsp_json['result']
+    try:
+        session.bulk_insert_mappings(AdmissionRecordTable, result)
+        session.commit()
+        print(f"{school_name}数据已保存到数据库！")
+    except Exception as e:
+        print(f"保存数据到数据库时出错：{e}")
+        session.rollback()
+    print("result:")
+    print(result)
 
 if __name__ == "__main__":
-    main()
+    # main()
+    debug('怀化师范高等专科学校')

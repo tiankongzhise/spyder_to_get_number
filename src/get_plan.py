@@ -5,6 +5,7 @@ import pandas as pd
 import copy
 import os
 import datetime
+import tqdm
 
 
 class GetDanZhaoServer(object):
@@ -165,9 +166,8 @@ if __name__ == "__main__":
     str_format = '计划类别:{0},院校代号:{1},专业组代码{2}'
     fail_file_path = './fail'
     
-    if not os.path.exists(fail_file_path):
-        os.makedirs(fail_file_path) 
-    for yxdh in yxdh_list:
+
+    for yxdh in tqdm.tqdm(yxdh_list, desc="进度条"):
 
         for jhlb in ['g1','g2','g3','g4','g5']:
 
@@ -210,7 +210,11 @@ if __name__ == "__main__":
                     fail_list.append({'yxdh':yxdh,'zyzdm':zyzdm,'jhlb':jhlb,"失败原因":"保存到数据库失败"})
                     print(f'{str_format.format(jhlb,yxdh,zyzdm)}保存到数据库失败')
                 time.sleep(1)
-    df = pd.DataFrame(fail_list)
-    fail_file_name = os.path.join(fail_file_path,f'{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.xlsx')
-    df.to_excel(f'f',index=False)
+    if fail_list:
+        print('存在失败项')
+        if not os.path.exists(fail_file_path):
+            os.makedirs(fail_file_path) 
+        df = pd.DataFrame(fail_list)
+        fail_file_name = os.path.join(fail_file_path,f'{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}.xlsx')
+        df.to_excel(fail_file_name,index=False)
     danzhao_server.close_session()
